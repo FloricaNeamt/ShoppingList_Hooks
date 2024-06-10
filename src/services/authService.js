@@ -1,6 +1,5 @@
 import http from "./httpService";
 import config from "../config.json";
-// import { useNavigate } from "react-router-dom";
 
 const cookieName = "Flori-Auth";
 

@@ -34,20 +34,14 @@ class Products extends Component {
     this.setState({ products });
 
     try {
-      await deleteProduct(product._id);
+      await deleteProduct(product._id, product.place._id);
     } catch (ex) {
       if (ex.response && ex.response.status === 404)
         toast.error("This product has already been deleted.");
       this.setState({ products: originalProducts });
     }
   };
-  handleLike = (product) => {
-    const products = [...this.state.products];
-    const index = products.indexOf(product);
-    product[index] = { ...products[index] };
-    products[index].liked = !products[index].liked;
-    this.setState({ products });
-  };
+
   handlePageChange = (page) => {
     this.setState({ currentPage: page });
   };
@@ -60,16 +54,7 @@ class Products extends Component {
   handleSort = (sortColumn) => {
     this.setState({ sortColumn });
   };
-  // handleAddPlace = async () => {
-  //   try {
-  //     const newPlace = await savePlace(); // You may need to pass data for the new place here
 
-  //     // Update the list of products in state
-  //     setProducts([...products, newPlace]);
-  //   } catch (error) {
-  //     console.error("Error adding new place:", error);
-  //   }
-  // };
   getPagedData = () => {
     const {
       pageSize,
@@ -83,9 +68,13 @@ class Products extends Component {
     let filtered = allProducts;
     if (searchQuery)
       filtered = allProducts.filter((p) =>
-        p.title.toLowerCase().includes(searchQuery.toLowerCase())
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
-    else if (selectedPlace && selectedPlace.name)
+    else if (
+      selectedPlace &&
+      selectedPlace.name &&
+      selectedPlace.name != "All Places"
+    )
       filtered = allProducts.filter((p) => p.place.name === selectedPlace.name);
 
     const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
@@ -117,33 +106,35 @@ class Products extends Component {
 
     return (
       <div className="row">
-        <div className="col-3">
+        <div className="col-md-9">
           <ListGroup
             items={this.state.places}
             selectedItem={this.state.selectedPlace}
             onItemSelect={this.handlePlaceSelect}
           />
         </div>
+        <div className="col-md-3">
+          <Link className="btn btn-primary" to="/places/new">
+            New Place
+          </Link>
+        </div>
+
         <div className="col">
-          {user && (
-            <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-              <Link className="btn btn-primary" to="/places/new">
-                New Place
-              </Link>
-              <Link className="btn btn-primary" to="/products/new">
-                New Product
-              </Link>
-            </div>
-          )}
           <p>Showing {totalCount} products in the database.</p>
           <SearchBox value={searchQuery} onChange={this.handleSearch} />
           <ProductsTable
             products={products}
             sortColumn={sortColumn}
-            onLike={this.handleLike}
             onDelete={this.handleDelete}
             onSort={this.handleSort}
           />
+          {user && (
+            <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+              <Link className="btn btn-primary" to="/products/new">
+                New Product
+              </Link>
+            </div>
+          )}
           <Pagination
             itemsCount={totalCount}
             pageSize={pageSize}

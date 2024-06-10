@@ -1,7 +1,7 @@
 import React from "react";
 import Form from "./common/form";
 import Joi from "joi-browser";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { getPlaces } from "../services/placeService";
 import { getProduct, saveProduct } from "../services/productService";
@@ -31,13 +31,13 @@ class ProductForm extends Form {
   }
   async populateProduct() {
     try {
-      const productId = this.props.match.params.id;
+      const productId = this.props.params.id;
       if (productId === "new") return;
       const { data: product } = await getProduct(productId);
       this.setState({ data: this.mapToViewModel(product) });
     } catch (ex) {
       if (ex.response && ex.response.status === 404)
-        this.props.history.replace("/not-found");
+        this.props.navigate("/not-found");
     }
   }
   async componentDidMount() {
@@ -49,7 +49,7 @@ class ProductForm extends Form {
     return {
       _id: product._id,
       name: product.name,
-      placeId: product.name,
+      placeId: product.place._id,
       quantity: product.quantity,
       category: product.category,
     };
@@ -65,7 +65,25 @@ class ProductForm extends Form {
         <h1>Product Form</h1>
         <form onSubmit={this.handleSubmit}>
           {this.renderInput("name", "Name")}
-          {this.renderSelect("placeId", "Place", this.state.places)}
+          {this.renderSelect(
+            "placeId",
+            "Place",
+            this.state.places.sort((a, b) => {
+              if (
+                a.name === this.state.data.placeId &&
+                b.name !== this.state.data.placeId
+              ) {
+                return -1;
+              } else if (
+                a.name !== this.state.data.placeId &&
+                b.name === this.state.data.placeId
+              ) {
+                return 1;
+              } else {
+                return 0;
+              }
+            })
+          )}
           {this.renderInput("quantity", "Quantity", "number")}
           {this.renderInput("category", "Category")}
           {this.renderButton("Save")}
@@ -77,8 +95,9 @@ class ProductForm extends Form {
 
 function withRouter(Component) {
   return (props) => {
+    const params = useParams();
     const navigate = useNavigate();
-    return <Component {...props} navigate={navigate} />;
+    return <Component {...props} navigate={navigate} params={params} />;
   };
 }
 export default withRouter(ProductForm);

@@ -6,7 +6,7 @@ const ListGroup = ({
   onItemSelect = () => {},
 }) => {
   return (
-    <ul className="list-group">
+    <ul className="list-group list-group-horizontal">
       {items.map((item) => (
         <li
           onClick={() => onItemSelect(item)}

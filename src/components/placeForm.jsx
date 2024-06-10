@@ -27,7 +27,7 @@ class PlaceForm extends Form {
       this.setState({ data: this.mapToViewModel(place) });
     } catch (ex) {
       if (ex.response && ex.response.status === 404)
-        this.props.history.replace("/not-found");
+      this.props.navigate("/not-found");
     }
   }
   async componentDidMount() {

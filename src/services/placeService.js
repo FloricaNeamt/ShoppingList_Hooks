@@ -7,7 +7,7 @@ const apiEndpoint = config.apiURL + "/places";
 function placeUrl(id) {
   return `${apiEndpoint}/${id}`;
 }
-export async function getPlaces(navigate) {
+export async function getPlaces() {
   getCookies();
   try {
     const result = await http.get(apiEndpoint, {
